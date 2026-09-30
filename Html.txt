@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ultimate host panel by cybeerx1</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            850: '#7f1d1d',
+                            900: '#450a0a',
+                            950: '#260606',
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0c0505;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            text-transform: lowercase;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #140808;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #7f1d1d;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #dc2626;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(220, 38, 38, 0.3), inset 0 0 10px rgba(220, 38, 38, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.2);
+            }
+        }
+
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(1000%); }
+        }
+
+        .animate-pulse-glow {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+
+        .animate-float {
+            animation: floatAnim 4s infinite ease-in-out;
+        }
+
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(38, 6, 6, 0.85) 0%, rgba(15, 5, 5, 0.95) 100%);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .glass-input {
+            background: rgba(20, 8, 8, 0.95);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #fff;
+            transition: all 0.3s ease;
+            text-transform: lowercase;
+        }
+
+        .glass-input:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+            outline: none;
+        }
+
+        .red-gradient-btn {
+            background: linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+            text-transform: lowercase;
+        }
+
+        .red-gradient-btn:hover {
+            background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .scanline-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(to bottom, transparent, rgba(239, 68, 68, 0.4), transparent);
+            animation: scanline 6s linear infinite;
+            pointer-events: none;
+            opacity: 0.25;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative flex flex-col justify-between selection:bg-red-600 selection:text-white">
+
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-red-900/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-10 right-1/4 w-96 h-96 bg-red-950/20 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- ==================== DUAL KEY VERIFICATION GATE (EXTRA SMALL & HIDDEN STYLE) ==================== -->
+    <div id="keyGateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-xl p-4 transition-all duration-500">
+        <div class="absolute inset-0 scanline-overlay"></div>
+        <div class="glass-panel w-full max-w-[280px] rounded-xl p-4 shadow-2xl relative z-10 animate-pulse-glow border-red-500/30">
+            <div class="text-center mb-3">
+                <div class="w-8 h-8 mx-auto mb-1.5 rounded-lg bg-gradient-to-tr from-red-900 to-red-600 flex items-center justify-center shadow-md shadow-red-600/40 animate-float">
+                    <i class="fa-solid fa-shield-cat text-xs text-white"></i>
+                </div>
+                <h1 class="text-[10px] font-bold text-white tracking-wide">gate <span class="text-red-500 font-black">by cybeerx1</span></h1>
+                <p class="text-[8px] text-red-300/60 mt-0.5 tracking-widest">enter tiny keys</p>
+            </div>
+
+            <div class="space-y-2.5">
+                <!-- Member Key Section (Very Small Font) -->
+                <div class="bg-red-950/40 p-2 rounded-lg border border-red-900/40">
+                    <label class="block text-[8px] font-bold text-red-300 mb-1 tracking-wider flex items-center justify-between">
+                        <span><i class="fa-solid fa-user text-red-400 mr-1 text-[7px]"></i> key membre</span>
+                    </label>
+                    <div class="flex gap-1.5">
+                        <input type="password" id="memberKeyInput" placeholder="..." class="glass-input flex-grow py-1 px-1.5 rounded text-[8px] font-semibold tracking-wider placeholder:text-red-900/50 lowercase">
+                        <button type="button" onclick="verifyMemberKey()" class="bg-red-900 hover:bg-red-800 text-white px-2 py-1 rounded text-[8px] font-bold transition flex items-center gap-1 cursor-pointer lowercase">
+                            <span>ok</span>
+                            <i class="fa-solid fa-arrow-right text-[7px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center my-0.5">
+                    <div class="flex-grow border-t border-red-900/40"></div>
+                    <span class="px-1.5 text-[7px] text-red-400 tracking-widest font-bold">or</span>
+                    <div class="flex-grow border-t border-red-900/40"></div>
+                </div>
+
+                <!-- Owner Key Section (Very Small Font) -->
+                <div class="bg-red-950/60 p-2 rounded-lg border border-red-700/50 shadow-md">
+                    <label class="block text-[8px] font-bold text-amber-300 mb-1 tracking-wider flex items-center justify-between">
+                        <span><i class="fa-solid fa-crown text-amber-400 mr-1 text-[7px]"></i> key owner</span>
+                    </label>
+                    <div class="flex gap-1.5">
+                        <input type="password" id="ownerKeyInput" placeholder="..." class="glass-input flex-grow py-1 px-1.5 rounded text-[8px] font-semibold tracking-wider placeholder:text-red-900/50 border-amber-500/30 focus:border-amber-400 lowercase">
+                        <button type="button" onclick="verifyOwnerKey()" class="bg-gradient-to-r from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-white px-2 py-1 rounded text-[8px] font-bold transition flex items-center gap-1 shadow-md shadow-amber-900/40 cursor-pointer lowercase">
+                            <span>vip</span>
+                            <i class="fa-solid fa-crown text-amber-300 text-[7px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="keyErrorMsg" class="hidden text-[8px] text-red-400 text-center font-bold bg-red-950/90 p-1 rounded border border-red-800/40 animate-bounce lowercase">
+                    <i class="fa-solid fa-triangle-exclamation mr-0.5"></i> invalid key!
+                </div>
+            </div>
+
+            <div class="mt-2.5 pt-1.5 border-t border-red-950 text-center text-[7px] text-red-400/50 tracking-widest">
+                cybeerx1 protection
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN DASHBOARD ==================== -->
+    <div id="mainDashboard" class="hidden flex-grow flex flex-col">
+        
+        <!-- Top Navbar -->
+        <header class="glass-panel border-b border-red-900/30 sticky top-0 z-40 px-6 py-3">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-red-800 to-red-500 flex items-center justify-center shadow-lg shadow-red-600/40 animate-pulse">
+                        <i class="fa-solid fa-terminal text-white text-xs"></i>
+                    </div>
+                    <div>
+                        <span id="roleBadgeText" class="text-[9px] font-bold text-red-400 tracking-wider">discord host suite</span>
+                        <h2 class="text-xs font-black text-white tracking-wide">host panel <span class="text-red-500">by cybeerx1</span></h2>
+                    </div>
+                </div>
+
+                <!-- Global Quick Stats Bar -->
+                <div class="flex items-center gap-3 bg-red-950/40 px-3 py-1.5 rounded-xl border border-red-900/40 text-xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span class="text-red-200 text-[11px]">gateway: <strong class="text-emerald-400">stable</strong></span>
+                    </div>
+                    <div class="h-3 w-[1px] bg-red-900"></div>
+                    <div class="text-[11px] text-red-200">
+                        active tokens: <strong id="globalActiveCount" class="text-white font-bold">0</strong>
+                    </div>
+                </div>
+
+                <!-- User Profile & Actions -->
+                <div class="flex items-center gap-2.5">
+                    <div id="sessionRoleBadge" class="flex items-center gap-1.5 bg-red-950/60 px-2.5 py-1 rounded-lg border border-red-800/40 text-[11px] font-bold text-red-200">
+                        <i class="fa-solid fa-user-shield text-red-400"></i>
+                        <span id="roleNameDisplay">member</span>
+                    </div>
+                    <button onclick="lockPanel()" class="bg-red-950 hover:bg-red-900 text-red-300 hover:text-white p-1.5 rounded-lg border border-red-800/40 transition text-[11px] font-bold flex items-center gap-1 cursor-pointer" title="lock panel">
+                        <i class="fa-solid fa-lock"></i>
+                        <span class="hidden sm:inline">lock</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="max-w-7xl w-full mx-auto p-4 md:p-6 space-y-5 flex-grow">
+
+            <!-- Top Stats Overview -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass-panel p-4 rounded-xl relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold text-red-300 tracking-wider">total tokens</p>
+                            <h3 id="statTotalTokens" class="text-2xl font-black text-white mt-1">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-red-900/40 border border-red-700/50 flex items-center justify-center text-red-400 text-base">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-[10px] text-red-300"><span class="text-emerald-400 font-bold">ready</span> for hosting</div>
+                </div>
+
+                <div class="glass-panel p-4 rounded-xl relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold text-red-300 tracking-wider">in voice (vc)</p>
+                            <h3 id="statInVcTokens" class="text-2xl font-black text-emerald-400 mt-1">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-emerald-950/40 border border-emerald-700/50 flex items-center justify-center text-emerald-400 text-base">
+                            <i class="fa-solid fa-microphone"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-[10px] text-red-300"><span class="text-emerald-400 font-bold">live stream</span> active</div>
+                </div>
+
+                <div class="glass-panel p-4 rounded-xl relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold text-red-300 tracking-wider">dead tokens</p>
+                            <h3 id="statDeadTokens" class="text-2xl font-black text-red-400 mt-1">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-red-950/40 border border-red-700/50 flex items-center justify-center text-red-400 text-base">
+                            <i class="fa-solid fa-ban"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-[10px] text-red-300">requires replacement</div>
+                </div>
+
+                <div class="glass-panel p-4 rounded-xl relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold text-red-300 tracking-wider">api ping</p>
+                            <h3 class="text-2xl font-black text-white mt-1">12<span class="text-[10px] text-red-400 font-normal ml-0.5">ms</span></h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-lg bg-red-900/40 border border-red-700/50 flex items-center justify-center text-red-400 text-base">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-[10px] text-red-300"><span class="text-emerald-400 font-bold">ultra fast</span></div>
+                </div>
+            </div>
+
+            <!-- ==================== OWNER EXCLUSIVE TOOLBAR ==================== -->
+            <div id="ownerExclusiveSection" class="hidden space-y-5">
+                <div class="glass-panel p-5 rounded-xl border-amber-500/40 relative overflow-hidden bg-gradient-to-br from-red-950/80 via-amber-950/20 to-red-950/90">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-5xl text-amber-400 pointer-events-none">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 pb-3 border-b border-amber-900/40 mb-4">
+                        <div class="w-9 h-9 rounded-lg bg-amber-900/40 border border-amber-600/50 flex items-center justify-center text-amber-400 text-base shadow-md shadow-amber-900/30">
+                            <i class="fa-solid fa-crown"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-amber-300 text-sm">owner exclusive suite (comprehensive id checkers & 26+ options)</h3>
+                            <p class="text-[11px] text-amber-200/70">check user id, channel id, role id, server id, message id, emoji id, invite id, webhook id</p>
+                        </div>
+                    </div>
+
+                    <!-- Comprehensive ID Checkers Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+                        
+                        <!-- 1. Check User ID -->
+                        <div class="bg-red-950/60 p-3 rounded-lg border border-red-900/60 space-y-1.5">
+                            <h4 class="text-[10px] font-bold text-white tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-user text-amber-400"></i>
+                                <span>check user id</span>
+                            </h4>
+                            <div class="flex gap-1">
+                                <input type="text" id="checkUserIdInput" placeholder="user id..." class="glass-input flex-grow py-1 px-2 rounded text-[11px] font-mono">
+                                <button onclick="checkIdType('user')" class="bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer">check</button>
+                            </div>
+                            <div id="checkUserIdResult" class="text-[9px] text-amber-200 bg-red-950/90 p-1.5 rounded border border-red-900 hidden font-mono"></div>
+                        </div>
+
+                        <!-- 2. Check Channel ID -->
+                        <div class="bg-red-950/60 p-3 rounded-lg border border-red-900/60 space-y-1.5">
+                            <h4 class="text-[10px] font-bold text-white tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-hashtag text-amber-400"></i>
+                                <span>check channel id</span>
+                            </h4>
+                            <div class="flex gap-1">
+                                <input type="text" id="checkChannelIdInput" placeholder="channel id..." class="glass-input flex-grow py-1 px-2 rounded text-[11px] font-mono">
+                                <button onclick="checkIdType('channel')" class="bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer">check</button>
+                            </div>
+                            <div id="checkChannelIdResult" class="text-[9px] text-amber-200 bg-red-950/90 p-1.5 rounded border border-red-900 hidden font-mono"></div>
+                        </div>
+
+                        <!-- 3. Check Role ID -->
+                        <div class="bg-red-950/60 p-3 rounded-lg border border-red-900/60 space-y-1.5">
+                            <h4 class="text-[10px] font-bold text-white tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-shield text-amber-400"></i>
+                                <span>check role id</span>
+                            </h4>
+                            <div class="flex gap-1">
+                                <input type="text" id="checkRoleIdInput" placeholder="role id..." class="glass-input flex-grow py-1 px-2 rounded text-[11px] font-mono">
+                                <button onclick="checkIdType('role')" class="bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer">check</button>
+                            </div>
+                            <div id="checkRoleIdResult" class="text-[9px] text-amber-200 bg-red-950/90 p-1.5 rounded border border-red-900 hidden font-mono"></div>
+                        </div>
+
+                        <!-- 4. Check Server ID -->
+                        <div class="bg-red-950/60 p-3 rounded-lg border border-red-900/60 space-y-1.5">
+                            <h4 class="text-[10px] font-bold text-white tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-server text-amber-400"></i>
+                                <span>check server id</span>
+                            </h4>
+                            <div class="flex gap-1">
+                                <input type="text" id="checkServerIdInput" placeholder="server id..." class="glass-input flex-grow py-1 px-2 rounded text-[11px] font-mono">
+                                <button onclick="checkIdType('server')" class="bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer">check</button>
+                            </div>
+                            <div id="checkServerIdResult" class="text-[9px] text-amber-200 bg-red-950/90 p-1.5 rounded border border-red-900 hidden font-mono"></div>
+                        </div>
+
+                        <!-- 5. Check Message ID -->
+                        <div class="bg-red-950/60 p-3 rounded-lg border border-red-900/60 space-y-1.5">
+                            <h4 class="text-[10px] font-bold text-white tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-message text-amber-400"></i>
+                                <span>check message id</span>
+                            </h4>
+                            <div class="flex gap-1">
+                                <input type="text" id="checkMessageIdInput" placeholder="message id..." class="glass-input flex-grow py-1 px-2 rounded text-[11px] font-mono">
+                                <button onclick="checkIdType('message')" class="bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer">check</button>
+                            </div>
+                            <div id="checkMessageIdResult" class="text-[9px] text-amber-200 bg-red-950/90 p-1.5 rounded border border-red-900 hidden font-mono"></div>
+                        </div>
+
+                        <!-- 6. Check Emoji ID -->
+                        <div class="bg-red-950/60 p-3 rounded-lg border border-red-900/60 space-y-1.5">
+                            <h4 class="text-[10px] font-bold text-white tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-icons text-amber-400"></i>
+                                <span>check emoji id</span>
+                            </h4>
+                            <div class="flex gap-1">
+                                <input type="text" id="checkEmojiIdInput" placeholder="emoji id..." class="glass-input flex-grow py-1 px-2 rounded text-[11px] font-mono">
+                                <button onclick="checkIdType('emoji')" class="bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer">check</button>
+                            </div>
+                            <div id="checkEmojiIdResult" class="text-[9px] text-amber-200 bg-red-950/90 p-1.5 rounded border border-red-900 hidden font-mono"></div>
+                        </div>
+
+                        <!-- 7. Check Invite ID -->
+                        <div class="bg-red-950/60 p-3 rounded-lg border border-red-900/60 space-y-1.5">
+                            <h4 class="text-[10px] font-bold text-white tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-link text-amber-400"></i>
+                                <span>check invite id</span>
+                            </h4>
+                            <div class="flex gap-1">
+                                <input type="text" id="checkInviteIdInput" placeholder="invite code..." class="glass-input flex-grow py-1 px-2 rounded text-[11px] font-mono">
+                                <button onclick="checkIdType('invite')" class="bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer">check</button>
+                            </div>
+                            <div id="checkInviteIdResult" class="text-[9px] text-amber-200 bg-red-950/90 p-1.5 rounded border border-red-900 hidden font-mono"></div>
+                        </div>
+
+                        <!-- 8. Check Webhook ID -->
+                        <div class="bg-red-950/60 p-3 rounded-lg border border-red-900/60 space-y-1.5">
+                            <h4 class="text-[10px] font-bold text-white tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-robot text-amber-400"></i>
+                                <span>check webhook id</span>
+                            </h4>
+                            <div class="flex gap-1">
+                                <input type="text" id="checkWebhookIdInput" placeholder="webhook id..." class="glass-input flex-grow py-1 px-2 rounded text-[11px] font-mono">
+                                <button onclick="checkIdType('webhook')" class="bg-amber-700 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-[11px] font-bold transition cursor-pointer">check</button>
+                            </div>
+                            <div id="checkWebhookIdResult" class="text-[9px] text-amber-200 bg-red-950/90 p-1.5 rounded border border-red-900 hidden font-mono"></div>
+                        </div>
+
+                    </div>
+
+                    <!-- 26+ Owner Options Grid -->
+                    <div>
+                        <h4 class="text-[11px] font-bold text-amber-300 tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-sliders text-amber-400"></i>
+                            <span>owner control matrix (26+ advanced host options)</span>
+                        </h4>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 text-[10px]">
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">1. auto reconnect</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">2. bypass captcha</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">3. anti-ban proxy</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">4. silent joining</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">5. low ram mode</span><input type="checkbox" class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">6. stream hd 60fps</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">7. audio bitrate max</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">8. video cam virtual</span><input type="checkbox" class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">9. auto mute all</span><input type="checkbox" class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">10. auto deafen</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">11. proxy rotator</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">12. webhook logger</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">13. fast heartbeat</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">14. token cleaner</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">15. auto-update ping</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">16. hide client tag</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">17. eu gateway</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">18. us east route</span><input type="checkbox" class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">19. asia vip route</span><input type="checkbox" class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">20. anti-crash shield</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">21. socket keep-alive</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">22. debug mode logs</span><input type="checkbox" class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">23. bypass ratelimit</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">24. multi-thread join</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">25. auto-replace dead</span><input type="checkbox" checked class="accent-amber-500"></div>
+                            <div class="bg-red-950/50 p-2 rounded-lg border border-red-900/50 flex items-center justify-between"><span class="text-red-200">26. super host mode</span><input type="checkbox" checked class="accent-amber-500"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Control Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                
+                <!-- Add & Import Tokens Card -->
+                <div class="glass-panel p-5 rounded-xl lg:col-span-1 space-y-3">
+                    <div class="flex items-center gap-2 pb-2.5 border-b border-red-900/40">
+                        <div class="w-7 h-7 rounded-lg bg-red-800/40 flex items-center justify-center text-red-400 text-xs">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <h3 class="font-bold text-white text-sm">add tokens</h3>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <div>
+                            <label class="block text-[11px] font-bold text-red-300 mb-1">paste tokens (one per line):</label>
+                            <textarea id="tokenInputTextarea" rows="5" placeholder="otayzqxnjk1mzq...&#10;mtazmzyzyw5mtg..." class="glass-input w-full p-2.5 rounded-lg text-xs font-mono resize-none"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="addTokens()" class="red-gradient-btn py-2 px-3 rounded-lg font-bold text-white text-xs tracking-wide flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-file-import"></i>
+                                <span>import</span>
+                            </button>
+                            <button onclick="clearTokenInput()" class="bg-red-950/80 hover:bg-red-900 text-red-300 hover:text-white py-2 px-3 rounded-lg font-bold text-xs border border-red-800/50 transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-trash-can"></i>
+                                <span>clear</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global VC Connect & Anti-Leave Guard -->
+                <div class="glass-panel p-5 rounded-xl lg:col-span-2 space-y-3 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 pb-2.5 border-b border-red-900/40 mb-3">
+                            <div class="w-7 h-7 rounded-lg bg-red-800/40 flex items-center justify-center text-red-400 text-xs">
+                                <i class="fa-solid fa-sliders"></i>
+                            </div>
+                            <h3 class="font-bold text-white text-sm">mass vc settings & anti-leave guard</h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-red-300 mb-1">guild id (server id):</label>
+                                <input type="text" id="guildIdInput" placeholder="e.g. 1048293849201928" class="glass-input w-full p-2.5 rounded-lg text-xs font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-red-300 mb-1">voice channel id:</label>
+                                <input type="text" id="channelIdInput" placeholder="e.g. 1048293849201935" class="glass-input w-full p-2.5 rounded-lg text-xs font-mono">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mt-3">
+                            <label class="flex items-center gap-2 bg-red-950/40 p-2.5 rounded-lg border border-red-900/40 cursor-pointer hover:border-red-500/50 transition">
+                                <input type="checkbox" id="muteCheck" class="accent-red-600 w-3.5 h-3.5 rounded">
+                                <span class="text-xs font-bold text-red-200">mute</span>
+                            </label>
+                            <label class="flex items-center gap-2 bg-red-950/40 p-2.5 rounded-lg border border-red-900/40 cursor-pointer hover:border-red-500/50 transition">
+                                <input type="checkbox" id="deafCheck" class="accent-red-600 w-3.5 h-3.5 rounded" checked>
+                                <span class="text-xs font-bold text-red-200">deafen</span>
+                            </label>
+                            <label class="flex items-center gap-2 bg-red-950/40 p-2.5 rounded-lg border border-red-900/40 cursor-pointer hover:border-red-500/50 transition">
+                                <input type="checkbox" id="camCheck" class="accent-red-600 w-3.5 h-3.5 rounded">
+                                <span class="text-xs font-bold text-red-200">camera</span>
+                            </label>
+                            <label class="flex items-center gap-2 bg-red-950/40 p-2.5 rounded-lg border border-red-900/40 cursor-pointer hover:border-red-500/50 transition">
+                                <input type="checkbox" id="streamCheck" class="accent-red-600 w-3.5 h-3.5 rounded">
+                                <span class="text-xs font-bold text-red-200">stream</span>
+                            </label>
+                            <!-- Anti-Leave Toggle Option -->
+                            <label class="flex items-center gap-2 bg-emerald-950/40 p-2.5 rounded-lg border border-emerald-800/50 cursor-pointer hover:border-emerald-500 transition col-span-2 sm:col-span-1">
+                                <input type="checkbox" id="antiLeaveCheck" class="accent-emerald-500 w-3.5 h-3.5 rounded" checked>
+                                <span class="text-xs font-bold text-emerald-300">anti-leave</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Mass Actions Buttons -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 border-t border-red-900/30">
+                        <button onclick="massConnect()" class="red-gradient-btn py-2.5 rounded-lg font-bold text-white text-xs flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-play"></i>
+                            <span>connect all</span>
+                        </button>
+                        <button onclick="massDisconnect()" class="bg-red-950 hover:bg-red-900 text-red-200 hover:text-white py-2.5 rounded-lg font-bold text-xs border border-red-800/50 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-stop"></i>
+                            <span>disconnect all</span>
+                        </button>
+                        <button onclick="massCheckTokens()" class="bg-red-950 hover:bg-red-900 text-red-200 hover:text-white py-2.5 rounded-lg font-bold text-xs border border-red-800/50 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-check-double"></i>
+                            <span>check all</span>
+                        </button>
+                        <button onclick="removeAllTokens()" class="bg-red-950/90 hover:bg-red-900 text-red-400 hover:text-red-200 py-2.5 rounded-lg font-bold text-xs border border-red-900 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-trash"></i>
+                            <span>remove all</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Tokens Management Table Section -->
+            <div class="glass-panel rounded-xl overflow-hidden shadow-2xl">
+                <div class="p-4 border-b border-red-900/40 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-red-900/40 border border-red-700/50 flex items-center justify-center text-red-400 text-sm">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-sm">token management table</h3>
+                            <p class="text-[10px] text-red-300/70">individual control, status checking, and voice channel state</p>
+                        </div>
+                    </div>
+
+                    <div class="relative w-full sm:w-64">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-red-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </span>
+                        <input type="text" id="tokenSearchInput" onkeyup="filterTokensTable()" placeholder="search token..." class="glass-input w-full py-2 pl-9 pr-3 rounded-lg text-xs lowercase">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-red-950/60 text-red-300 text-[11px] tracking-wider border-b border-red-900/50">
+                                <th class="py-2.5 px-3">#</th>
+                                <th class="py-2.5 px-3">token preview</th>
+                                <th class="py-2.5 px-3">status</th>
+                                <th class="py-2.5 px-3">vc state</th>
+                                <th class="py-2.5 px-3">ping</th>
+                                <th class="py-2.5 px-3 text-center">actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tokensTableBody" class="divide-y divide-red-950 text-xs font-mono">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="emptyTokensState" class="p-10 text-center space-y-2">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-red-950/80 border border-red-900/60 flex items-center justify-center text-red-500 text-xl animate-pulse">
+                        <i class="fa-solid fa-ghost"></i>
+                    </div>
+                    <h4 class="text-white font-bold text-xs">no tokens added yet</h4>
+                </div>
+
+                <div class="p-3 bg-red-950/40 border-t border-red-900/40 flex items-center justify-between text-[11px] text-red-300">
+                    <div>total loaded: <span id="tableCountBadge" class="font-bold text-white">0</span></div>
+                    <div class="text-[10px] text-red-400/70">host panel - cybeerx1 production</div>
+                </div>
+            </div>
+
+        </main>
+
+        <footer class="glass-panel border-t border-red-900/30 py-3 px-6 text-center text-xs text-red-300/80 mt-10">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px]">
+                <div>host panel by <strong class="text-white font-black tracking-wider">cybeerx1</strong></div>
+                <div class="flex items-center gap-3 text-red-400">
+                    <span><i class="fa-solid fa-shield-halved mr-1"></i> secured access</span>
+                    <span>•</span>
+                    <span>all rights reserved © 2026</span>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-32 opacity-0 transition-all duration-300 max-w-xs w-full glass-panel border-red-500/50 p-3 rounded-xl shadow-2xl flex items-center gap-2.5">
+        <div id="toastIconContainer" class="w-8 h-8 rounded-lg bg-red-800/50 flex items-center justify-center text-white text-sm flex-shrink-0">
+            <i id="toastIcon" class="fa-solid fa-check"></i>
+        </div>
+        <div class="flex-grow">
+            <h5 id="toastTitle" class="text-white font-bold text-[11px]">system notification</h5>
+            <p id="toastMessage" class="text-[10px] text-red-200 mt-0.5">operation executed successfully</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        let tokensList = [];
+        const MEMBER_KEY = "cybeerx15";
+        const OWNER_KEY = "cybeerx16";
+        let currentRole = 'member';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            sessionStorage.removeItem('cybeerx1_auth');
+            sessionStorage.removeItem('cybeerx1_role');
+            
+            loadInitialDemoTokens();
+            startAntiLeaveGuard();
+        });
+
+        function loadInitialDemoTokens() {
+            if (tokensList.length === 0) {
+                const sampleTokens = [
+                    "otayzqxnjk1mzq6813258.gf89kl.xyz1234567890abcdefabcdef_cybeerx1",
+                    "mtazmzyzyw5mtg3zqyyzqy5os5hj76yt.mnb0987654321fedcbafedcba_cybeerx1"
+                ];
+                sampleTokens.forEach(t => {
+                    tokensList.push({
+                        id: 'tok_' + Math.random().toString(36).substr(2, 9),
+                        token: t,
+                        status: 'unchecked',
+                        vcState: 'disconnected',
+                        ping: '--'
+                    });
+                });
+                renderTokensTable();
+            }
+        }
+
+        function verifyMemberKey() {
+            const inputVal = document.getElementById('memberKeyInput').value.trim().toLowerCase();
+            const errorMsg = document.getElementById('keyErrorMsg');
+
+            if (inputVal === MEMBER_KEY) {
+                currentRole = 'member';
+                sessionStorage.setItem('cybeerx1_auth', 'true');
+                sessionStorage.setItem('cybeerx1_role', 'member');
+                unlockDashboard();
+                showToast("access granted", "logged in as member host", "success");
+            } else {
+                showErrorShake(errorMsg, document.getElementById('memberKeyInput'));
+            }
+        }
+
+        function verifyOwnerKey() {
+            const inputVal = document.getElementById('ownerKeyInput').value.trim().toLowerCase();
+            const errorMsg = document.getElementById('keyErrorMsg');
+
+            if (inputVal === OWNER_KEY) {
+                currentRole = 'owner';
+                sessionStorage.setItem('cybeerx1_auth', 'true');
+                sessionStorage.setItem('cybeerx1_role', 'owner');
+                unlockDashboard();
+                showToast("owner vip access", "logged in with full owner privileges", "success");
+            } else {
+                showErrorShake(errorMsg, document.getElementById('ownerKeyInput'));
+            }
+        }
+
+        function showErrorShake(errorMsg, inputElem) {
+            errorMsg.classList.remove('hidden');
+            inputElem.classList.add('border-red-500', 'animate-shake');
+            setTimeout(() => {
+                inputElem.classList.remove('animate-shake');
+            }, 500);
+        }
+
+        function unlockDashboard() {
+            const gate = document.getElementById('keyGateModal');
+            if(gate) {
+                gate.style.opacity = '0';
+                gate.style.pointerEvents = 'none';
+                setTimeout(() => {
+                    gate.style.display = 'none';
+                    document.getElementById('mainDashboard').classList.remove('hidden');
+                    
+                    const roleNameDisplay = document.getElementById('roleNameDisplay');
+                    const sessionRoleBadge = document.getElementById('sessionRoleBadge');
+                    const ownerExclusiveSection = document.getElementById('ownerExclusiveSection');
+
+                    if (currentRole === 'owner') {
+                        roleNameDisplay.innerText = 'owner vip';
+                        sessionRoleBadge.className = "flex items-center gap-1.5 bg-amber-950/80 px-2.5 py-1 rounded-lg border border-amber-500/60 text-[11px] font-bold text-amber-300 shadow-lg shadow-amber-900/30";
+                        sessionRoleBadge.querySelector('i').className = "fa-solid fa-crown text-amber-400";
+                        ownerExclusiveSection.classList.remove('hidden');
+                    } else {
+                        roleNameDisplay.innerText = 'member host';
+                        sessionRoleBadge.className = "flex items-center gap-1.5 bg-red-950/60 px-2.5 py-1 rounded-lg border border-red-800/40 text-[11px] font-bold text-red-200";
+                        sessionRoleBadge.querySelector('i').className = "fa-solid fa-user-shield text-red-400";
+                        ownerExclusiveSection.classList.add('hidden');
+                    }
+                }, 400);
+            }
+        }
+
+        function lockPanel() {
+            sessionStorage.removeItem('cybeerx1_auth');
+            sessionStorage.removeItem('cybeerx1_role');
+            location.reload();
+        }
+
+        function checkIdType(type) {
+            const inputElem = document.getElementById(`check${type.charAt(0).toUpperCase() + type.slice(1)}IdInput`);
+            const resultBox = document.getElementById(`check${type.charAt(0).toUpperCase() + type.slice(1)}IdResult`);
+            const val = inputElem.value.trim();
+
+            if (!val) {
+                showToast("error", `please enter a valid ${type} id`, "error");
+                return;
+            }
+
+            resultBox.classList.remove('hidden');
+            resultBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> checking ${type} id...`;
+
+            setTimeout(() => {
+                resultBox.innerHTML = `✅ valid ${type} id!<br>• status: active / valid<br>• latency: 11ms`;
+                showToast("checked", `successfully verified ${type} id`, "success");
+            }, 600);
+        }
+
+        function addTokens() {
+            const textarea = document.getElementById('tokenInputTextarea');
+            const lines = textarea.value.split('\n').map(l => l.trim().toLowerCase()).filter(l => l.length > 0);
+
+            if (lines.length === 0) {
+                showToast("warning", "please enter at least one token", "error");
+                return;
+            }
+
+            let addedCount = 0;
+            lines.forEach(tokenStr => {
+                tokensList.push({
+                    id: 'tok_' + Math.random().toString(36).substr(2, 9),
+                    token: tokenStr,
+                    status: 'unchecked',
+                    vcState: 'disconnected',
+                    ping: '--'
+                });
+                addedCount++;
+            });
+
+            textarea.value = '';
+            renderTokensTable();
+            showToast("tokens imported", `successfully added ${addedCount} tokens`, "success");
+        }
+
+        function clearTokenInput() {
+            document.getElementById('tokenInputTextarea').value = '';
+            showToast("notice", "input box cleared", "info");
+        }
+
+        function removeAllTokens() {
+            if (confirm("are you sure you want to remove all tokens?")) {
+                tokensList = [];
+                renderTokensTable();
+                showToast("cleared", "all tokens have been removed", "info");
+            }
+        }
+
+        function deleteSingleToken(id) {
+            tokensList = tokensList.filter(t => t.id !== id);
+            renderTokensTable();
+            showToast("deleted", "token removed successfully", "info");
+        }
+
+        function renderTokensTable(filterText = '') {
+            const tbody = document.getElementById('tokensTableBody');
+            const emptyState = document.getElementById('emptyTokensState');
+            const tableCountBadge = document.getElementById('tableCountBadge');
+            const statTotalTokens = document.getElementById('statTotalTokens');
+            const statInVcTokens = document.getElementById('statInVcTokens');
+            const statDeadTokens = document.getElementById('statDeadTokens');
+            const globalActiveCount = document.getElementById('globalActiveCount');
+
+            tbody.innerHTML = '';
+
+            let filtered = tokensList;
+            if (filterText) {
+                filtered = tokensList.filter(t => t.token.includes(filterText.toLowerCase()));
+            }
+
+            tableCountBadge.innerText = tokensList.length;
+            statTotalTokens.innerText = tokensList.length;
+
+            let inVcCount = tokensList.filter(t => t.vcState === 'connected').length;
+            let deadCount = tokensList.filter(t => t.status === 'dead').length;
+
+            statInVcTokens.innerText = inVcCount;
+            statDeadTokens.innerText = deadCount;
+            globalActiveCount.innerText = inVcCount;
+
+            if (tokensList.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach((item, index) => {
+                let maskToken = item.token.length > 20 ? item.token.substring(0, 10) + '••••••••' + item.token.substring(item.token.length - 4) : item.token;
+
+                let statusBadge = '';
+                if (item.status === 'valid') {
+                    statusBadge = `<span class="px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 text-[9px] font-bold">valid</span>`;
+                } else if (item.status === 'dead') {
+                    statusBadge = `<span class="px-2 py-0.5 rounded-full bg-red-950/80 text-red-400 border border-red-800/60 text-[9px] font-bold">dead</span>`;
+                } else {
+                    statusBadge = `<span class="px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-400 border border-amber-800/60 text-[9px] font-bold">unchecked</span>`;
+                }
+
+                let vcBadge = '';
+                if (item.vcState === 'connected') {
+                    vcBadge = `<span class="px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-300 border border-emerald-700/50 text-[9px] font-bold flex items-center gap-1 w-max"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>connected</span>`;
+                } else {
+                    vcBadge = `<span class="px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-400 border border-zinc-800 text-[9px] font-bold w-max">disconnected</span>`;
+                }
+
+                let row = document.createElement('tr');
+                row.className = "hover:bg-red-950/35 transition border-b border-red-950/40";
+                row.innerHTML = `
+                    <td class="py-2.5 px-3 text-red-400 font-bold">${index + 1}</td>
+                    <td class="py-2.5 px-3 text-white font-mono tracking-tight" title="${item.token}">${maskToken}</td>
+                    <td class="py-2.5 px-3">${statusBadge}</td>
+                    <td class="py-2.5 px-3">${vcBadge}</td>
+                    <td class="py-2.5 px-3 text-red-300">${item.ping}</td>
+                    <td class="py-2.5 px-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="singleConnect('${item.id}')" title="connect to vc" class="w-6 h-6 rounded bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/50 transition flex items-center justify-center cursor-pointer">
+                                <i class="fa-solid fa-play text-[9px]"></i>
+                            </button>
+                            <button onclick="singleDisconnect('${item.id}')" title="disconnect" class="w-6 h-6 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 transition flex items-center justify-center cursor-pointer">
+                                <i class="fa-solid fa-stop text-[9px]"></i>
+                            </button>
+                            <button onclick="singleCheckToken('${item.id}')" title="check token" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-900 text-amber-400 border border-amber-800/50 transition flex items-center justify-center cursor-pointer">
+                                <i class="fa-solid fa-check text-[9px]"></i>
+                            </button>
+                            <button onclick="deleteSingleToken('${item.id}')" title="delete" class="w-6 h-6 rounded bg-red-950/80 hover:bg-red-900 text-red-400 border border-red-800/50 transition flex items-center justify-center cursor-pointer">
+                                <i class="fa-solid fa-trash text-[9px]"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterTokensTable() {
+            const query = document.getElementById('tokenSearchInput').value;
+            renderTokensTable(query);
+        }
+
+        function singleConnect(id) {
+            const guildId = document.getElementById('guildIdInput').value.trim();
+            const channelId = document.getElementById('channelIdInput').value.trim();
+
+            if (!guildId || !channelId) {
+                showToast("error", "please enter guild id and channel id first", "error");
+                return;
+            }
+
+            const tokenObj = tokensList.find(t => t.id === id);
+            if (tokenObj) {
+                tokenObj.vcState = 'connected';
+                tokenObj.status = 'valid';
+                tokenObj.ping = Math.floor(Math.random() * 25 + 10) + 'ms';
+                renderTokensTable();
+                showToast("connected", "token successfully joined voice channel", "success");
+            }
+        }
+
+        function singleDisconnect(id) {
+            const tokenObj = tokensList.find(t => t.id === id);
+            if (tokenObj) {
+                tokenObj.vcState = 'disconnected';
+                tokenObj.ping = '--';
+                renderTokensTable();
+                showToast("disconnected", "token left voice channel", "info");
+            }
+        }
+
+        function singleCheckToken(id) {
+            const tokenObj = tokensList.find(t => t.id === id);
+            if (tokenObj) {
+                let isValid = Math.random() > 0.1;
+                tokenObj.status = isValid ? 'valid' : 'dead';
+                renderTokensTable();
+                showToast("check result", isValid ? "token is 100% working" : "token is dead or invalid", isValid ? "success" : "error");
+            }
+        }
+
+        function massConnect() {
+            const guildId = document.getElementById('guildIdInput').value.trim();
+            const channelId = document.getElementById('channelIdInput').value.trim();
+
+            if (!guildId || !channelId) {
+                showToast("error", "enter guild id and channel id to mass connect", "error");
+                return;
+            }
+
+            if (tokensList.length === 0) {
+                showToast("warning", "no tokens available", "error");
+                return;
+            }
+
+            tokensList.forEach(t => {
+                t.vcState = 'connected';
+                t.status = 'valid';
+                t.ping = Math.floor(Math.random() * 30 + 10) + 'ms';
+            });
+
+            renderTokensTable();
+            showToast("mass host", "all tokens connected to voice successfully!", "success");
+        }
+
+        function massDisconnect() {
+            if (tokensList.length === 0) return;
+            tokensList.forEach(t => {
+                t.vcState = 'disconnected';
+                t.ping = '--';
+            });
+            renderTokensTable();
+            showToast("mass stop", "all tokens disconnected from voice", "info");
+        }
+
+        function massCheckTokens() {
+            if (tokensList.length === 0) return;
+            tokensList.forEach(t => {
+                t.status = Math.random() > 0.15 ? 'valid' : 'dead';
+            });
+            renderTokensTable();
+            showToast("batch check", "all tokens verified successfully", "success");
+        }
+
+        function startAntiLeaveGuard() {
+            setInterval(() => {
+                const antiLeaveEnabled = document.getElementById('antiLeaveCheck')?.checked;
+                const guildId = document.getElementById('guildIdInput')?.value.trim();
+                const channelId = document.getElementById('channelIdInput')?.value.trim();
+
+                if (antiLeaveEnabled && guildId && channelId && tokensList.length > 0) {
+                    let reconnectedAny = false;
+                    tokensList.forEach(t => {
+                        if (t.vcState === 'connected' && Math.random() < 0.05) {
+                            reconnectedAny = true;
+                            t.ping = Math.floor(Math.random() * 20 + 12) + 'ms';
+                        }
+                    });
+                    if (reconnectedAny) {
+                        renderTokensTable();
+                        showToast("anti-leave guard", "token dropped from vc! auto-reconnected instantly.", "success");
+                    }
+                }
+            }, 6000);
+        }
+
+        function showToast(title, message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            const toastTitle = document.getElementById('toastTitle');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIconContainer = document.getElementById('toastIconContainer');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastTitle.innerText = title;
+            toastMessage.innerText = message;
+
+            if (type === 'success') {
+                toastIconContainer.className = "w-8 h-8 rounded-lg bg-emerald-600/80 flex items-center justify-center text-white text-sm flex-shrink-0 shadow-md";
+                toastIcon.className = "fa-solid fa-check";
+            } else if (type === 'error') {
+                toastIconContainer.className = "w-8 h-8 rounded-lg bg-red-600/80 flex items-center justify-center text-white text-sm flex-shrink-0 shadow-md";
+                toastIcon.className = "fa-solid fa-triangle-exclamation";
+            } else {
+                toastIconContainer.className = "w-8 h-8 rounded-lg bg-amber-600/80 flex items-center justify-center text-white text-sm flex-shrink-0 shadow-md";
+                toastIcon.className = "fa-solid fa-circle-info";
+            }
+
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

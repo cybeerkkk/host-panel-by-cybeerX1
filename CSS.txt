@@ -1,0 +1,329 @@
+/* ==================== BASE & RESET ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #0c0505;
+    --bg-secondary: #140808;
+    --bg-card: rgba(38, 6, 6, 0.85);
+    --brand-red: #ef4444;
+    --brand-red-dark: #7f1d1d;
+    --brand-red-light: #dc2626;
+    --accent-amber: #f59e0b;
+    --text-primary: #f3f4f6;
+    --text-secondary: #fca5a5;
+    --border-red: rgba(239, 68, 68, 0.2);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    text-transform: lowercase;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* ==================== SCROLLBAR ==================== */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--brand-red-dark);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-red-light);
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(220, 38, 38, 0.3), inset 0 0 10px rgba(220, 38, 38, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 35px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.2);
+    }
+}
+
+@keyframes floatAnim {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(1000%); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-pulse-glow {
+    animation: pulseGlow 3s infinite ease-in-out;
+}
+
+.animate-float {
+    animation: floatAnim 4s infinite ease-in-out;
+}
+
+.animate-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* ==================== GLASS EFFECTS ==================== */
+.glass-panel {
+    background: linear-gradient(135deg, rgba(38, 6, 6, 0.85) 0%, rgba(15, 5, 5, 0.95) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-red);
+    transition: all 0.3s ease;
+}
+
+.glass-panel:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.glass-input {
+    background: rgba(20, 8, 8, 0.95);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #fff;
+    transition: all 0.3s ease;
+    text-transform: lowercase;
+}
+
+.glass-input:focus {
+    border-color: var(--brand-red);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+    outline: none;
+}
+
+.glass-input::placeholder {
+    color: rgba(220, 38, 38, 0.5);
+}
+
+/* ==================== BUTTONS ==================== */
+.red-gradient-btn {
+    background: linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    text-transform: lowercase;
+    border: none;
+    cursor: pointer;
+}
+
+.red-gradient-btn:hover {
+    background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    transform: translateY(-1px);
+}
+
+.red-gradient-btn:active {
+    transform: translateY(0);
+}
+
+/* ==================== SCANLINE OVERLAY ==================== */
+.scanline-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to bottom, transparent, rgba(239, 68, 68, 0.4), transparent);
+    animation: scanline 6s linear infinite;
+    pointer-events: none;
+    opacity: 0.25;
+}
+
+/* ==================== KEY GATE MODAL ==================== */
+#keyGateModal {
+    transition: all 0.5s ease;
+}
+
+#keyGateModal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ==================== STATUS BADGES ==================== */
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.status-valid {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-dead {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-unchecked {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.vc-connected {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.vc-disconnected {
+    background: rgba(63, 63, 70, 0.5);
+    color: #a1a1aa;
+    border: 1px solid rgba(63, 63, 70, 0.5);
+}
+
+/* ==================== TABLE STYLES ==================== */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    background: rgba(127, 29, 29, 0.4);
+    color: #fca5a5;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.data-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(69, 10, 10, 0.4);
+    font-size: 0.75rem;
+}
+
+.data-table tr:hover {
+    background: rgba(127, 29, 29, 0.15);
+    transition: background 0.2s ease;
+}
+
+/* ==================== TOAST NOTIFICATION ==================== */
+#toastNotification {
+    transition: all 0.3s ease;
+}
+
+#toastNotification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* ==================== SELECTION ==================== */
+::selection {
+    background: var(--brand-red);
+    color: white;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 640px) {
+    .glass-panel {
+        margin: 0 0.5rem;
+    }
+    
+    .data-table {
+        font-size: 0.65rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.5rem;
+    }
+}
+
+/* ==================== OWNER EXCLUSIVE ==================== */
+.owner-glow {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+/* ==================== LOADING SPINNER ==================== */
+.spinner {
+    border: 2px solid rgba(239, 68, 68, 0.2);
+    border-top-color: var(--brand-red);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==================== CUSTOM CHECKBOX ==================== */
+input[type="checkbox"] {
+    accent-color: var(--brand-red);
+    cursor: pointer;
+}
+
+input[type="checkbox"].accent-amber {
+    accent-color: var(--accent-amber);
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+.text-glow {
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.border-glow {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+/* ==================== BACKGROUND EFFECTS ==================== */
+.bg-blur-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ==================== SCROLLBAR FOR TEXTAREA ==================== */
+textarea::-webkit-scrollbar {
+    width: 4px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+    background: var(--brand-red-dark);
+    border-radius: 2px;
+}

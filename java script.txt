@@ -1,0 +1,643 @@
+/**
+ * CybeerX1 Host Panel - Main JavaScript
+ * Discord Token Management & Voice Channel Hosting
+ */
+
+// ==================== CONFIGURATION ====================
+const CONFIG = {
+    MEMBER_KEY: "cybeerx15",
+    OWNER_KEY: "cybeerx16",
+    ANTI_LEAVE_INTERVAL: 6000,
+    TOAST_DURATION: 3000
+};
+
+// ==================== STATE MANAGEMENT ====================
+const state = {
+    tokensList: [],
+    currentRole: 'member',
+    isAuthenticated: false,
+    antiLeaveInterval: null
+};
+
+// ==================== DOM ELEMENTS ====================
+const elements = {
+    keyGateModal: document.getElementById('keyGateModal'),
+    mainDashboard: document.getElementById('mainDashboard'),
+    memberKeyInput: document.getElementById('memberKeyInput'),
+    ownerKeyInput: document.getElementById('ownerKeyInput'),
+    keyErrorMsg: document.getElementById('keyErrorMsg'),
+    roleNameDisplay: document.getElementById('roleNameDisplay'),
+    sessionRoleBadge: document.getElementById('sessionRoleBadge'),
+    ownerExclusiveSection: document.getElementById('ownerExclusiveSection'),
+    tokensTableBody: document.getElementById('tokensTableBody'),
+    emptyTokensState: document.getElementById('emptyTokensState'),
+    tokenInputTextarea: document.getElementById('tokenInputTextarea'),
+    tokenSearchInput: document.getElementById('tokenSearchInput'),
+    guildIdInput: document.getElementById('guildIdInput'),
+    channelIdInput: document.getElementById('channelIdInput'),
+    toastNotification: document.getElementById('toastNotification'),
+    toastTitle: document.getElementById('toastTitle'),
+    toastMessage: document.getElementById('toastMessage'),
+    toastIconContainer: document.getElementById('toastIconContainer'),
+    toastIcon: document.getElementById('toastIcon'),
+    stats: {
+        total: document.getElementById('statTotalTokens'),
+        inVc: document.getElementById('statInVcTokens'),
+        dead: document.getElementById('statDeadTokens'),
+        globalActive: document.getElementById('globalActiveCount'),
+        tableCount: document.getElementById('tableCountBadge')
+    }
+};
+
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', () => {
+    // Clear any existing session
+    sessionStorage.removeItem('cybeerx1_auth');
+    sessionStorage.removeItem('cybeerx1_role');
+    
+    // Load demo tokens
+    loadInitialDemoTokens();
+    
+    // Start anti-leave guard
+    startAntiLeaveGuard();
+    
+    // Setup event listeners
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    // Enter key support for inputs
+    elements.memberKeyInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verifyMemberKey();
+    });
+    
+    elements.ownerKeyInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verifyOwnerKey();
+    });
+    
+    // Search filter
+    elements.tokenSearchInput?.addEventListener('input', (e) => {
+        renderTokensTable(e.target.value);
+    });
+}
+
+// ==================== AUTHENTICATION ====================
+function verifyMemberKey() {
+    const inputVal = elements.memberKeyInput.value.trim().toLowerCase();
+    
+    if (inputVal === CONFIG.MEMBER_KEY) {
+        authenticate('member');
+    } else {
+        showErrorShake(elements.keyErrorMsg, elements.memberKeyInput);
+    }
+}
+
+function verifyOwnerKey() {
+    const inputVal = elements.ownerKeyInput.value.trim().toLowerCase();
+    
+    if (inputVal === CONFIG.OWNER_KEY) {
+        authenticate('owner');
+    } else {
+        showErrorShake(elements.keyErrorMsg, elements.ownerKeyInput);
+    }
+}
+
+function authenticate(role) {
+    state.currentRole = role;
+    state.isAuthenticated = true;
+    
+    sessionStorage.setItem('cybeerx1_auth', 'true');
+    sessionStorage.setItem('cybeerx1_role', role);
+    
+    unlockDashboard();
+    showToast("access granted", `logged in as ${role} host`, "success");
+}
+
+function unlockDashboard() {
+    const gate = elements.keyGateModal;
+    
+    gate.style.opacity = '0';
+    gate.style.pointerEvents = 'none';
+    
+    setTimeout(() => {
+        gate.style.display = 'none';
+        elements.mainDashboard.classList.remove('hidden');
+        elements.mainDashboard.classList.add('animate-fade-in');
+        
+        updateRoleUI();
+    }, 400);
+}
+
+function updateRoleUI() {
+    const isOwner = state.currentRole === 'owner';
+    
+    if (isOwner) {
+        elements.roleNameDisplay.innerText = 'owner vip';
+        elements.sessionRoleBadge.className = "flex items-center gap-1.5 bg-amber-950/80 px-2.5 py-1 rounded-lg border border-amber-500/60 text-[11px] font-bold text-amber-300 shadow-lg shadow-amber-900/30";
+        elements.sessionRoleBadge.querySelector('i').className = "fa-solid fa-crown text-amber-400";
+        elements.ownerExclusiveSection.classList.remove('hidden');
+    } else {
+        elements.roleNameDisplay.innerText = 'member host';
+        elements.sessionRoleBadge.className = "flex items-center gap-1.5 bg-red-950/60 px-2.5 py-1 rounded-lg border border-red-800/40 text-[11px] font-bold text-red-200";
+        elements.sessionRoleBadge.querySelector('i').className = "fa-solid fa-user-shield text-red-400";
+        elements.ownerExclusiveSection.classList.add('hidden');
+    }
+}
+
+function lockPanel() {
+    if (confirm("are you sure you want to lock the panel?")) {
+        sessionStorage.removeItem('cybeerx1_auth');
+        sessionStorage.removeItem('cybeerx1_role');
+        location.reload();
+    }
+}
+
+function showErrorShake(errorMsg, inputElem) {
+    errorMsg.classList.remove('hidden');
+    inputElem.classList.add('border-red-500', 'animate-shake');
+    
+    setTimeout(() => {
+        inputElem.classList.remove('animate-shake');
+    }, 500);
+    
+    // Clear error after 3 seconds
+    setTimeout(() => {
+        errorMsg.classList.add('hidden');
+        inputElem.classList.remove('border-red-500');
+    }, 3000);
+}
+
+// ==================== TOKEN MANAGEMENT ====================
+function loadInitialDemoTokens() {
+    if (state.tokensList.length === 0) {
+        const sampleTokens = [
+            "otayzqxnjk1mzq6813258.gf89kl.xyz1234567890abcdefabcdef_cybeerx1",
+            "mtazmzyzyw5mtg3zqyyzqy5os5hj76yt.mnb0987654321fedcbafedcba_cybeerx1"
+        ];
+        
+        sampleTokens.forEach(token => {
+            addTokenToList(token);
+        });
+        
+        renderTokensTable();
+    }
+}
+
+function addTokenToList(tokenStr) {
+    state.tokensList.push({
+        id: 'tok_' + Math.random().toString(36).substr(2, 9),
+        token: tokenStr,
+        status: 'unchecked',
+        vcState: 'disconnected',
+        ping: '--',
+        addedAt: new Date().toISOString()
+    });
+}
+
+function addTokens() {
+    const textarea = elements.tokenInputTextarea;
+    const lines = textarea.value
+        .split('\n')
+        .map(line => line.trim().toLowerCase())
+        .filter(line => line.length > 0);
+    
+    if (lines.length === 0) {
+        showToast("warning", "please enter at least one token", "error");
+        return;
+    }
+    
+    let addedCount = 0;
+    let duplicates = 0;
+    
+    lines.forEach(tokenStr => {
+        // Check for duplicates
+        const exists = state.tokensList.some(t => t.token === tokenStr);
+        if (exists) {
+            duplicates++;
+        } else {
+            addTokenToList(tokenStr);
+            addedCount++;
+        }
+    });
+    
+    textarea.value = '';
+    renderTokensTable();
+    
+    let message = `successfully added ${addedCount} tokens`;
+    if (duplicates > 0) {
+        message += ` (${duplicates} duplicates skipped)`;
+    }
+    
+    showToast("tokens imported", message, "success");
+}
+
+function clearTokenInput() {
+    elements.tokenInputTextarea.value = '';
+    showToast("notice", "input box cleared", "info");
+}
+
+function removeAllTokens() {
+    if (state.tokensList.length === 0) {
+        showToast("notice", "no tokens to remove", "info");
+        return;
+    }
+    
+    if (confirm(`are you sure you want to remove all ${state.tokensList.length} tokens?`)) {
+        state.tokensList = [];
+        renderTokensTable();
+        showToast("cleared", "all tokens have been removed", "info");
+    }
+}
+
+function deleteSingleToken(id) {
+    const token = state.tokensList.find(t => t.id === id);
+    if (token && confirm("delete this token?")) {
+        state.tokensList = state.tokensList.filter(t => t.id !== id);
+        renderTokensTable();
+        showToast("deleted", "token removed successfully", "info");
+    }
+}
+
+// ==================== TABLE RENDERING ====================
+function renderTokensTable(filterText = '') {
+    const tbody = elements.tokensTableBody;
+    const emptyState = elements.emptyTokensState;
+    
+    tbody.innerHTML = '';
+    
+    let filtered = state.tokensList;
+    if (filterText) {
+        filtered = state.tokensList.filter(t => 
+            t.token.toLowerCase().includes(filterText.toLowerCase())
+        );
+    }
+    
+    updateStats();
+    
+    if (state.tokensList.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+    } else {
+        emptyState.classList.add('hidden');
+    }
+    
+    filtered.forEach((item, index) => {
+        const row = createTokenRow(item, index);
+        tbody.appendChild(row);
+    });
+}
+
+function createTokenRow(item, index) {
+    const maskToken = maskTokenString(item.token);
+    const statusBadge = getStatusBadge(item.status);
+    const vcBadge = getVcBadge(item.vcState);
+    
+    const row = document.createElement('tr');
+    row.className = "hover:bg-red-950/35 transition border-b border-red-950/40 animate-fade-in";
+    row.style.animationDelay = `${index * 0.05}s`;
+    
+    row.innerHTML = `
+        <td class="py-2.5 px-3 text-red-400 font-bold">${index + 1}</td>
+        <td class="py-2.5 px-3 text-white font-mono tracking-tight" title="${item.token}">${maskToken}</td>
+        <td class="py-2.5 px-3">${statusBadge}</td>
+        <td class="py-2.5 px-3">${vcBadge}</td>
+        <td class="py-2.5 px-3 text-red-300">${item.ping}</td>
+        <td class="py-2.5 px-3 text-center">
+            <div class="flex items-center justify-center gap-1">
+                <button onclick="singleConnect('${item.id}')" title="connect to vc" 
+                    class="w-6 h-6 rounded bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/50 transition flex items-center justify-center">
+                    <i class="fa-solid fa-play text-[9px]"></i>
+                </button>
+                <button onclick="singleDisconnect('${item.id}')" title="disconnect" 
+                    class="w-6 h-6 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 transition flex items-center justify-center">
+                    <i class="fa-solid fa-stop text-[9px]"></i>
+                </button>
+                <button onclick="singleCheckToken('${item.id}')" title="check token" 
+                    class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-900 text-amber-400 border border-amber-800/50 transition flex items-center justify-center">
+                    <i class="fa-solid fa-check text-[9px]"></i>
+                </button>
+                <button onclick="deleteSingleToken('${item.id}')" title="delete" 
+                    class="w-6 h-6 rounded bg-red-950/80 hover:bg-red-900 text-red-400 border border-red-800/50 transition flex items-center justify-center">
+                    <i class="fa-solid fa-trash text-[9px]"></i>
+                </button>
+            </div>
+        </td>
+    `;
+    
+    return row;
+}
+
+function maskTokenString(token) {
+    if (token.length <= 20) return token;
+    return token.substring(0, 10) + '••••••••' + token.substring(token.length - 4);
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        valid: `<span class="status-badge status-valid"><i class="fa-solid fa-check-circle text-[8px]"></i> valid</span>`,
+        dead: `<span class="status-badge status-dead"><i class="fa-solid fa-times-circle text-[8px]"></i> dead</span>`,
+        unchecked: `<span class="status-badge status-unchecked"><i class="fa-solid fa-question-circle text-[8px]"></i> unchecked</span>`
+    };
+    return badges[status] || badges.unchecked;
+}
+
+function getVcBadge(state) {
+    if (state === 'connected') {
+        return `<span class="status-badge vc-connected"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> connected</span>`;
+    }
+    return `<span class="status-badge vc-disconnected">disconnected</span>`;
+}
+
+function updateStats() {
+    const total = state.tokensList.length;
+    const inVc = state.tokensList.filter(t => t.vcState === 'connected').length;
+    const dead = state.tokensList.filter(t => t.status === 'dead').length;
+    
+    elements.stats.total.innerText = total;
+    elements.stats.inVc.innerText = inVc;
+    elements.stats.dead.innerText = dead;
+    elements.stats.globalActive.innerText = inVc;
+    elements.stats.tableCount.innerText = total;
+}
+
+function filterTokensTable() {
+    const query = elements.tokenSearchInput.value;
+    renderTokensTable(query);
+}
+
+// ==================== TOKEN ACTIONS ====================
+function singleConnect(id) {
+    const guildId = elements.guildIdInput.value.trim();
+    const channelId = elements.channelIdInput.value.trim();
+    
+    if (!guildId || !channelId) {
+        showToast("error", "please enter guild id and channel id first", "error");
+        elements.guildIdInput.focus();
+        return;
+    }
+    
+    const tokenObj = state.tokensList.find(t => t.id === id);
+    if (!tokenObj) return;
+    
+    // Simulate connection
+    tokenObj.vcState = 'connected';
+    tokenObj.status = 'valid';
+    tokenObj.ping = Math.floor(Math.random() * 25 + 10) + 'ms';
+    
+    renderTokensTable(elements.tokenSearchInput.value);
+    showToast("connected", "token successfully joined voice channel", "success");
+}
+
+function singleDisconnect(id) {
+    const tokenObj = state.tokensList.find(t => t.id === id);
+    if (!tokenObj) return;
+    
+    tokenObj.vcState = 'disconnected';
+    tokenObj.ping = '--';
+    
+    renderTokensTable(elements.tokenSearchInput.value);
+    showToast("disconnected", "token left voice channel", "info");
+}
+
+function singleCheckToken(id) {
+    const tokenObj = state.tokensList.find(t => t.id === id);
+    if (!tokenObj) return;
+    
+    // Simulate checking
+    const isValid = Math.random() > 0.1;
+    tokenObj.status = isValid ? 'valid' : 'dead';
+    
+    renderTokensTable(elements.tokenSearchInput.value);
+    
+    if (isValid) {
+        showToast("check result", "token is 100% working", "success");
+    } else {
+        showToast("check result", "token is dead or invalid", "error");
+    }
+}
+
+// ==================== MASS ACTIONS ====================
+function massConnect() {
+    const guildId = elements.guildIdInput.value.trim();
+    const channelId = elements.channelIdInput.value.trim();
+    
+    if (!guildId || !channelId) {
+        showToast("error", "enter guild id and channel id to mass connect", "error");
+        return;
+    }
+    
+    if (state.tokensList.length === 0) {
+        showToast("warning", "no tokens available", "error");
+        return;
+    }
+    
+    let connectedCount = 0;
+    state.tokensList.forEach(t => {
+        if (t.status !== 'dead') {
+            t.vcState = 'connected';
+            t.status = 'valid';
+            t.ping = Math.floor(Math.random() * 30 + 10) + 'ms';
+            connectedCount++;
+        }
+    });
+    
+    renderTokensTable(elements.tokenSearchInput.value);
+    showToast("mass host", `${connectedCount} tokens connected to voice!`, "success");
+}
+
+function massDisconnect() {
+    if (state.tokensList.length === 0) return;
+    
+    state.tokensList.forEach(t => {
+        t.vcState = 'disconnected';
+        t.ping = '--';
+    });
+    
+    renderTokensTable(elements.tokenSearchInput.value);
+    showToast("mass stop", "all tokens disconnected from voice", "info");
+}
+
+function massCheckTokens() {
+    if (state.tokensList.length === 0) {
+        showToast("warning", "no tokens to check", "error");
+        return;
+    }
+    
+    let validCount = 0;
+    let deadCount = 0;
+    
+    state.tokensList.forEach(t => {
+        const isValid = Math.random() > 0.15;
+        t.status = isValid ? 'valid' : 'dead';
+        if (isValid) validCount++;
+        else deadCount++;
+    });
+    
+    renderTokensTable(elements.tokenSearchInput.value);
+    showToast("batch check", `${validCount} valid, ${deadCount} dead`, "success");
+}
+
+// ==================== ANTI-LEAVE GUARD ====================
+function startAntiLeaveGuard() {
+    if (state.antiLeaveInterval) {
+        clearInterval(state.antiLeaveInterval);
+    }
+    
+    state.antiLeaveInterval = setInterval(() => {
+        const antiLeaveEnabled = document.getElementById('antiLeaveCheck')?.checked;
+        const guildId = elements.guildIdInput?.value.trim();
+        const channelId = elements.channelIdInput?.value.trim();
+        
+        if (!antiLeaveEnabled || !guildId || !channelId) return;
+        if (state.tokensList.length === 0) return;
+        
+        let reconnectedAny = false;
+        const reconnectedTokens = [];
+        
+        state.tokensList.forEach(t => {
+            if (t.vcState === 'connected' && Math.random() < 0.05) {
+                // Simulate disconnect and reconnect
+                t.ping = Math.floor(Math.random() * 20 + 12) + 'ms';
+                reconnectedAny = true;
+                reconnectedTokens.push(t.id);
+            }
+        });
+        
+        if (reconnectedAny) {
+            renderTokensTable(elements.tokenSearchInput.value);
+            showToast("anti-leave guard", `reconnected ${reconnectedTokens.length} dropped tokens`, "success");
+        }
+    }, CONFIG.ANTI_LEAVE_INTERVAL);
+}
+
+// ==================== OWNER ID CHECKERS ====================
+function checkIdType(type) {
+    const inputElem = document.getElementById(`check${capitalize(type)}IdInput`);
+    const resultBox = document.getElementById(`check${capitalize(type)}IdResult`);
+    const val = inputElem?.value.trim();
+    
+    if (!val) {
+        showToast("error", `please enter a valid ${type} id`, "error");
+        return;
+    }
+    
+    resultBox.classList.remove('hidden');
+    resultBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> checking ${type} id...`;
+    
+    // Simulate API check
+    setTimeout(() => {
+        const isValid = Math.random() > 0.1;
+        const latency = Math.floor(Math.random() * 20 + 5);
+        
+        if (isValid) {
+            resultBox.innerHTML = `
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2 text-emerald-400">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span>valid ${type} id</span>
+                    </div>
+                    <div class="text-amber-200/80">• status: active</div>
+                    <div class="text-amber-200/80">• latency: ${latency}ms</div>
+                    <div class="text-amber-200/80">• snowflake: ${val.substring(0, 10)}...</div>
+                </div>
+            `;
+            showToast("checked", `successfully verified ${type} id`, "success");
+        } else {
+            resultBox.innerHTML = `
+                <div class="flex items-center gap-2 text-red-400">
+                    <i class="fa-solid fa-times-circle"></i>
+                    <span>invalid ${type} id or not found</span>
+                </div>
+            `;
+            showToast("error", `${type} id verification failed`, "error");
+        }
+    }, 600);
+}
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// ==================== TOAST NOTIFICATIONS ====================
+function showToast(title, message, type = 'success') {
+    const toast = elements.toastNotification;
+    
+    elements.toastTitle.innerText = title;
+    elements.toastMessage.innerText = message;
+    
+    // Set icon and colors based on type
+    const configs = {
+        success: {
+            iconClass: 'fa-check',
+            containerClass: 'bg-emerald-600/80',
+            borderColor: 'border-emerald-500/50'
+        },
+        error: {
+            iconClass: 'fa-triangle-exclamation',
+            containerClass: 'bg-red-600/80',
+            borderColor: 'border-red-500/50'
+        },
+        info: {
+            iconClass: 'fa-circle-info',
+            containerClass: 'bg-amber-600/80',
+            borderColor: 'border-amber-500/50'
+        }
+    };
+    
+    const config = configs[type] || configs.success;
+    
+    elements.toastIconContainer.className = `w-8 h-8 rounded-lg ${config.containerClass} flex items-center justify-center text-white text-sm flex-shrink-0 shadow-md`;
+    elements.toastIcon.className = `fa-solid ${config.iconClass}`;
+    toast.className = `fixed bottom-5 right-5 z-50 max-w-xs w-full glass-panel ${config.borderColor} p-3 rounded-xl shadow-2xl flex items-center gap-2.5 show`;
+    
+    // Auto hide
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, CONFIG.TOAST_DURATION);
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+function exportTokens() {
+    if (state.tokensList.length === 0) {
+        showToast("error", "no tokens to export", "error");
+        return;
+    }
+    
+    const validTokens = state.tokensList
+        .filter(t => t.status === 'valid')
+        .map(t => t.token)
+        .join('\n');
+    
+    if (!validTokens) {
+        showToast("error", "no valid tokens to export", "error");
+        return;
+    }
+    
+    const blob = new Blob([validTokens], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `valid_tokens_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast("exported", "valid tokens downloaded", "success");
+}
+
+// Expose functions to window for onclick handlers
+window.verifyMemberKey = verifyMemberKey;
+window.verifyOwnerKey = verifyOwnerKey;
+window.lockPanel = lockPanel;
+window.checkIdType = checkIdType;
+window.addTokens = addTokens;
+window.clearTokenInput = clearTokenInput;
+window.removeAllTokens = removeAllTokens;
+window.deleteSingleToken = deleteSingleToken;
+window.singleConnect = singleConnect;
+window.singleDisconnect = singleDisconnect;
+window.singleCheckToken = singleCheckToken;
+window.massConnect = massConnect;
+window.massDisconnect = massDisconnect;
+window.massCheckTokens = massCheckTokens;
+window.filterTokensTable = filterTokensTable;
+window.exportTokens = exportTokens;
